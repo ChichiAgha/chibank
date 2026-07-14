@@ -29,6 +29,8 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Scan image with Trivy
+        id: trivy
+        continue-on-error: true
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
@@ -48,3 +50,7 @@ jobs:
         with:
           name: trivy-${{ matrix.image }}
           path: trivy-${{ matrix.image }}.txt
+
+      - name: Fail on HIGH or CRITICAL vulnerabilities
+        if: steps.trivy.outcome == 'failure'
+        run: exit 1
