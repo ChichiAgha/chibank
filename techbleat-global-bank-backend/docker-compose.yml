@@ -3,9 +3,9 @@ services:
     image: postgres:15
     container_name: banking-postgres
     environment:
-      POSTGRES_DB: bankingdb
-      POSTGRES_USER: bankuser
-      POSTGRES_PASSWORD: bankpass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -49,8 +49,8 @@ services:
     build: ./user-service
     container_name: user-service
     environment:
-      DATABASE_URL: postgresql://bankuser:bankpass@postgres:5432/bankingdb
-      FRONTEND_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
     ports:
       - "8000:8000"
 
@@ -58,15 +58,15 @@ services:
     build: ./transaction-service
     container_name: transaction-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bankingdb
-      SPRING_DATASOURCE_USERNAME: bankuser
-      SPRING_DATASOURCE_PASSWORD: bankpass
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SERVER_PORT: 8080
-      FRONTEND_ORIGIN: http://localhost:3000
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
     ports:
       - "8080:8080"
 
@@ -74,9 +74,9 @@ services:
     build: ./activity-service
     container_name: activity-service
     environment:
-      DATABASE_URL: postgresql://bankuser:bankpass@postgres:5432/bankingdb
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      FRONTEND_ORIGIN: http://localhost:3000
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
     ports:
       - "8001:8001"
 

@@ -190,22 +190,22 @@ Activities are written automatically when the Activity Service consumes transact
 
 ## Environment Variables
 
-The defaults below are pre-configured in `docker-compose.yml`. Override them if running services outside Docker.
+Runtime values are loaded from environment variables. For local Docker Compose, copy `.env.example` to `.env` and provide real values before starting the stack.
 
 ### User Service & Activity Service
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | `postgresql://bankuser:bankpass@postgres:5432/bankingdb` | PostgreSQL connection string |
+| `DATABASE_URL` | `postgresql://<db-user>:<db-password>@postgres:5432/<db-name>` | PostgreSQL connection string |
 | `FRONTEND_ORIGIN` | `http://localhost:3000` | CORS allowed origin |
 
 ### Transaction Service
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://postgres:5432/bankingdb` | JDBC connection URL |
-| `SPRING_DATASOURCE_USERNAME` | `bankuser` | Database username |
-| `SPRING_DATASOURCE_PASSWORD` | `bankpass` | Database password |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://postgres:5432/<db-name>` | JDBC connection URL |
+| `SPRING_DATASOURCE_USERNAME` | `<db-user>` | Database username |
+| `SPRING_DATASOURCE_PASSWORD` | `<db-password>` | Database password |
 | `KAFKA_BOOTSTRAP_SERVERS` | `kafka:29092` | Kafka broker address |
 | `REDIS_HOST` | `redis` | Redis hostname |
 | `REDIS_PORT` | `6379` | Redis port |
@@ -250,7 +250,7 @@ cd user-service           # or activity-service
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-DATABASE_URL=postgresql://bankuser:bankpass@localhost:5432/bankingdb \
+DATABASE_URL=postgresql://<db-user>:<db-password>@localhost:5432/<db-name> \
   uvicorn app.main:app --reload --port 8000
 ```
 

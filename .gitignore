@@ -1,1 +1,48 @@
+# Local tool state
 .claude/
+**/.claude/
+
+# Dependencies and build output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+target/
+**/target/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+secrets/
+**/secrets/
+
+# Logs and reports
+*.log
+logs/
+coverage/
+security-reports/
+
+# OS, editor, and temporary files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+~$*
+**/~$*
+
+# Local infrastructure state
+.terraform/
+*.tfstate
+*.tfstate.*
+kubeconfig
+*.kubeconfig

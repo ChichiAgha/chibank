@@ -1,0 +1,46 @@
+name: Image Vulnerability Scan
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  IMAGE_TAG: v1.0.0-k8s
+  IMAGE_REGISTRY: chigoldd
+
+jobs:
+  trivy-scan:
+    name: Scan container images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - chibank-frontend
+          - chibank-user-service
+          - chibank-transaction-service
+          - chibank-activity-service
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ env.IMAGE_REGISTRY }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
+          severity: HIGH,CRITICAL
+          format: table
+          output: trivy-${{ matrix.image }}.txt
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload Trivy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ matrix.image }}
+          path: trivy-${{ matrix.image }}.txt
