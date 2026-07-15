@@ -139,18 +139,32 @@ jobs:
         working-directory: techbleat-global-bank-backend/transaction-service
         run: mvn -q -DskipTests compile
 
+      - name: Create SonarQube scanner configuration
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
+        run: |
+          {
+            echo "sonar.projectKey=${SONAR_PROJECT_KEY}"
+            if [ -n "${SONAR_ORGANIZATION}" ]; then
+              echo "sonar.organization=${SONAR_ORGANIZATION}"
+            fi
+            echo "sonar.sources=techbleat-global-bank-frontend/src,techbleat-global-bank-backend/user-service/app,techbleat-global-bank-backend/activity-service/app,techbleat-global-bank-backend/transaction-service/src/main/java"
+            echo "sonar.tests=techbleat-global-bank-frontend/src/App.test.jsx,techbleat-global-bank-frontend/src/test,techbleat-global-bank-backend/user-service/tests,techbleat-global-bank-backend/activity-service/tests,techbleat-global-bank-backend/transaction-service/src/test/java"
+            echo "sonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/target/**,**/.venv/**,**/venv/**,techbleat-global-bank-frontend/src/**/*.test.jsx,techbleat-global-bank-frontend/src/test/**"
+            echo "sonar.test.inclusions=**/*.test.jsx,**/tests/**/*.py,**/src/test/**/*.java"
+            echo "sonar.java.binaries=techbleat-global-bank-backend/transaction-service/target/classes"
+          } > sonar-project.properties
+
+      - name: Show SonarQube scanner configuration
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
+        run: |
+          echo "SONAR_HOST_URL=${SONAR_HOST_URL}"
+          echo "SONAR_PROJECT_KEY=${SONAR_PROJECT_KEY}"
+          echo "SONAR_ORGANIZATION=${SONAR_ORGANIZATION}"
+          sed -n '1,120p' sonar-project.properties
+
       - name: Run SonarQube scan
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
         uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          args: >
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
-            -Dsonar.sources=techbleat-global-bank-frontend/src,techbleat-global-bank-backend/user-service/app,techbleat-global-bank-backend/activity-service/app,techbleat-global-bank-backend/transaction-service/src/main/java
-            -Dsonar.tests=techbleat-global-bank-frontend/src/App.test.jsx,techbleat-global-bank-frontend/src/test,techbleat-global-bank-backend/user-service/tests,techbleat-global-bank-backend/activity-service/tests,techbleat-global-bank-backend/transaction-service/src/test/java
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/target/**,**/.venv/**,**/venv/**,techbleat-global-bank-frontend/src/**/*.test.jsx,techbleat-global-bank-frontend/src/test/**
-            -Dsonar.test.inclusions=**/*.test.jsx,**/tests/**/*.py,**/src/test/**/*.java
-            -Dsonar.java.binaries=techbleat-global-bank-backend/transaction-service/target/classes
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
