@@ -30,6 +30,7 @@ secrets/
 logs/
 coverage/
 security-reports/
+whatichanged.md
 
 # OS, editor, and temporary files
 .DS_Store
