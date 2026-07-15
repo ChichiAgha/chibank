@@ -126,6 +126,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Java for SonarQube analysis
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Compile transaction service for SonarQube Java analysis
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
+        working-directory: techbleat-global-bank-backend/transaction-service
+        run: mvn -q -DskipTests compile
+
       - name: Run SonarQube scan
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != '' && env.SONAR_PROJECT_KEY != '' }}
         uses: SonarSource/sonarqube-scan-action@v6
@@ -137,6 +150,7 @@ jobs:
             -Dsonar.tests=techbleat-global-bank-frontend/src/App.test.jsx,techbleat-global-bank-frontend/src/test,techbleat-global-bank-backend/user-service/tests,techbleat-global-bank-backend/activity-service/tests,techbleat-global-bank-backend/transaction-service/src/test/java
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/target/**,**/.venv/**,**/venv/**,techbleat-global-bank-frontend/src/**/*.test.jsx,techbleat-global-bank-frontend/src/test/**
             -Dsonar.test.inclusions=**/*.test.jsx,**/tests/**/*.py,**/src/test/**/*.java
+            -Dsonar.java.binaries=techbleat-global-bank-backend/transaction-service/target/classes
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
@@ -170,6 +184,7 @@ jobs:
       - frontend-tests
       - python-tests
       - java-tests
+      - sonar
       - checkov
     strategy:
       fail-fast: false
