@@ -134,8 +134,8 @@ jobs:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.sources=techbleat-global-bank-frontend/src,techbleat-global-bank-backend/user-service/app,techbleat-global-bank-backend/activity-service/app,techbleat-global-bank-backend/transaction-service/src/main/java
-            -Dsonar.tests=techbleat-global-bank-frontend/src,techbleat-global-bank-backend/user-service/tests,techbleat-global-bank-backend/activity-service/tests,techbleat-global-bank-backend/transaction-service/src/test/java
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/target/**,**/.venv/**,**/venv/**
+            -Dsonar.tests=techbleat-global-bank-frontend/src/App.test.jsx,techbleat-global-bank-frontend/src/test,techbleat-global-bank-backend/user-service/tests,techbleat-global-bank-backend/activity-service/tests,techbleat-global-bank-backend/transaction-service/src/test/java
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/target/**,**/.venv/**,**/venv/**,techbleat-global-bank-frontend/src/**/*.test.jsx,techbleat-global-bank-frontend/src/test/**
             -Dsonar.test.inclusions=**/*.test.jsx,**/tests/**/*.py,**/src/test/**/*.java
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
