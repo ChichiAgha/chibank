@@ -44,7 +44,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: techbleat-global-bank-frontend/package-lock.json
 
@@ -85,7 +85,7 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: Run pytest
-        run: pytest -q
+        run: PYTHONPATH=. pytest -q
 
   java-tests:
     name: Transaction service tests
