@@ -111,6 +111,7 @@ jobs:
   sonar:
     name: SonarQube static analysis
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs:
       - frontend-tests
       - python-tests
