@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: bleatbank
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ .Values.frontend.port }}
+      targetPort: http
+      protocol: TCP

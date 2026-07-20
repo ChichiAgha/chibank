@@ -1,0 +1,66 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: bleatbank
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: bleatbank
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api/(users.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: user-service
+                port:
+                  name: http
+          - path: /api/(transactions.*|balance.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: transaction-service
+                port:
+                  name: http
+          - path: /api/(activities.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: activity-service
+                port:
+                  name: http
+{{- end }}

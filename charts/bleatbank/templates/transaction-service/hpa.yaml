@@ -1,0 +1,26 @@
+{{- if .Values.transactionService.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: transaction-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: transaction-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: bleatbank
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: transaction-service
+  minReplicas: {{ .Values.transactionService.hpa.minReplicas }}
+  maxReplicas: {{ .Values.transactionService.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.transactionService.hpa.targetCPUUtilizationPercentage }}
+{{- end }}

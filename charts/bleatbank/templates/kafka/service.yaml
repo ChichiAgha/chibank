@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: messaging
+    app.kubernetes.io/part-of: bleatbank
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: broker
+      port: {{ .Values.kafka.port }}
+      targetPort: broker
+      protocol: TCP
+    - name: controller
+      port: {{ .Values.kafka.controllerPort }}
+      targetPort: controller
+      protocol: TCP
+    - name: external
+      port: {{ .Values.kafka.externalPort }}
+      targetPort: external
+      protocol: TCP
+    - name: jmx
+      port: {{ .Values.kafka.jmxPort }}
+      targetPort: jmx
+      protocol: TCP
