@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bleatbank-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/part-of: bleatbank
+data:
+  frontend-origin: {{ .Values.global.frontendOrigin | quote }}
+  kafka-bootstrap-servers: "kafka:{{ .Values.kafka.port }}"
+  redis-host: redis
+  redis-port: {{ .Values.redis.port | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: bleatbank
+data:
+  init.sql: |
+{{ .Files.Get "files/init.sql" | nindent 4 }}

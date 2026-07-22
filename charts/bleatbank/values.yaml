@@ -5,17 +5,17 @@ global:
 
 images:
   frontend:
-    repository: your-dockerhub/bleatbank-frontend
-    tag: "1.0.0"
+    repository: chigoldd/chibank-frontend
+    tag: "v1.1.0"
   userService:
-    repository: your-dockerhub/bleatbank-user-service
-    tag: "1.0.0"
+    repository: chigoldd/chibank-user-service
+    tag: "v1.1.0"
   transactionService:
-    repository: your-dockerhub/bleatbank-transaction-service
-    tag: "1.0.0"
+    repository: chigoldd/chibank-transaction-service
+    tag: "v1.1.0"
   activityService:
-    repository: your-dockerhub/bleatbank-activity-service
-    tag: "1.0.0"
+    repository: chigoldd/chibank-activity-service
+    tag: "v1.1.0"
 
 frontend:
   replicas: 1
@@ -40,12 +40,12 @@ userService:
       memory: 256Mi
 
 transactionService:
-  replicas: 1
+  replicas: 2
   port: 8080
   hpa:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 3
+    minReplicas: 2
+    maxReplicas: 6
     targetCPUUtilizationPercentage: 80
   resources:
     requests:
@@ -120,7 +120,25 @@ ingress:
 
 monitoring:
   enabled: true
+  releaseLabel: monitoring
   serviceMonitor:
     enabled: true
   prometheusRules:
     enabled: true
+  alerting:
+    enabled: false
+    slack:
+      channel: "#banking-alerts"
+      secretName: alertmanager-slack-webhook
+      secretKey: webhook-url
+  exporters:
+    enabled: true
+    postgres:
+      image: prometheuscommunity/postgres-exporter:v0.17.1
+      port: 9187
+    redis:
+      image: oliver006/redis_exporter:v1.67.0
+      port: 9121
+    kafka:
+      image: danielqsj/kafka-exporter:v1.8.0
+      port: 9308

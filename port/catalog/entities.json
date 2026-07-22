@@ -56,6 +56,9 @@
       "port": 8080,
       "repository": "https://github.com/ChichiAgha/chibank",
       "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-frontend",
+      "image": "chigoldd/chibank-frontend:v1.1.0",
+      "version": "v1.1.0",
+      "dashboard": "https://github.com/ChichiAgha/chibank/blob/main/dashboards/operations-overview.json",
       "hasTests": true,
       "hasMonitoring": false,
       "hasAlerts": false
@@ -77,6 +80,10 @@
       "repository": "https://github.com/ChichiAgha/chibank",
       "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-backend/user-service",
       "runbook": "https://github.com/ChichiAgha/chibank/blob/main/runbooks/ServiceDown.md",
+      "image": "chigoldd/chibank-user-service:v1.1.0",
+      "version": "v1.1.0",
+      "metricsPath": "/metrics",
+      "dashboard": "https://github.com/ChichiAgha/chibank/blob/main/dashboards/operations-overview.json",
       "hasTests": true,
       "hasMonitoring": true,
       "hasAlerts": true
@@ -98,6 +105,10 @@
       "repository": "https://github.com/ChichiAgha/chibank",
       "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-backend/transaction-service",
       "runbook": "https://github.com/ChichiAgha/chibank/blob/main/runbooks/HighErrorRate.md",
+      "image": "chigoldd/chibank-transaction-service:v1.1.0",
+      "version": "v1.1.0",
+      "metricsPath": "/actuator/prometheus",
+      "dashboard": "https://github.com/ChichiAgha/chibank/blob/main/dashboards/operations-overview.json",
       "hasTests": true,
       "hasMonitoring": true,
       "hasAlerts": true
@@ -119,6 +130,10 @@
       "repository": "https://github.com/ChichiAgha/chibank",
       "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-backend/activity-service",
       "runbook": "https://github.com/ChichiAgha/chibank/blob/main/runbooks/ServiceDown.md",
+      "image": "chigoldd/chibank-activity-service:v1.1.0",
+      "version": "v1.1.0",
+      "metricsPath": "/metrics",
+      "dashboard": "https://github.com/ChichiAgha/chibank/blob/main/dashboards/operations-overview.json",
       "hasTests": true,
       "hasMonitoring": true,
       "hasAlerts": true
@@ -138,5 +153,33 @@
     "title": "Production",
     "properties": { "type": "production", "namespace": "banking", "cluster": "production", "url": "https://techbleat-bank.duckdns.org", "protected": true },
     "relations": { "application": "techbleat-bank" }
+  },
+  {
+    "blueprint": "bankDeployment",
+    "identifier": "frontend-development-v1-1-0",
+    "title": "Frontend v1.1.0 on Development",
+    "properties": { "version": "v1.1.0", "status": "succeeded", "deployedAt": "2026-07-22T09:20:00Z", "deployedBy": "local-kubernetes-rollout" },
+    "relations": { "service": "frontend", "environment": "development" }
+  },
+  {
+    "blueprint": "bankDeployment",
+    "identifier": "user-service-development-v1-1-0",
+    "title": "User Service v1.1.0 on Development",
+    "properties": { "version": "v1.1.0", "status": "succeeded", "deployedAt": "2026-07-22T09:20:00Z", "deployedBy": "local-kubernetes-rollout" },
+    "relations": { "service": "user-service", "environment": "development" }
+  },
+  {
+    "blueprint": "bankDeployment",
+    "identifier": "transaction-service-development-v1-1-0",
+    "title": "Transaction Service v1.1.0 on Development",
+    "properties": { "version": "v1.1.0", "status": "succeeded", "deployedAt": "2026-07-22T09:20:00Z", "deployedBy": "local-kubernetes-rollout" },
+    "relations": { "service": "transaction-service", "environment": "development" }
+  },
+  {
+    "blueprint": "bankDeployment",
+    "identifier": "activity-service-development-v1-1-0",
+    "title": "Activity Service v1.1.0 on Development",
+    "properties": { "version": "v1.1.0", "status": "succeeded", "deployedAt": "2026-07-22T09:20:00Z", "deployedBy": "local-kubernetes-rollout" },
+    "relations": { "service": "activity-service", "environment": "development" }
   }
 ]

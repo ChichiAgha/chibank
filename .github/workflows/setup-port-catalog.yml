@@ -25,7 +25,7 @@ jobs:
       - name: Validate catalog definitions
         run: |
           jq -e 'type == "array" and length == 6' port/catalog/blueprints.json
-          jq -e 'type == "array" and length == 11' port/catalog/entities.json
+          jq -e 'type == "array" and length == 15' port/catalog/entities.json
 
       - name: Apply Port catalog
         env:

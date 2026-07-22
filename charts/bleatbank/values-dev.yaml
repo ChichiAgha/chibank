@@ -1,0 +1,13 @@
+global:
+  frontendOrigin: http://bleatbank.local
+
+postgres:
+  password: dev-only-change-me
+  storage: 1Gi
+
+frontend:
+  replicas: 1
+userService:
+  replicas: 1
+activityService:
+  replicas: 1

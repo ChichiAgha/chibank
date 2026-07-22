@@ -1,0 +1,108 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "timeseries", "title": "All-services request rate", "id": 1,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [{ "expr": "sum by (job) (bleatbank:http_requests:rate5m)", "legendFormat": "{{job}}" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "timeseries", "title": "HTTP 5xx error percentage", "id": 2,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "thresholds": { "mode": "absolute", "steps": [{ "color": "green" }, { "color": "red", "value": 0.05 }] } } },
+      "targets": [{ "expr": "bleatbank:http_5xx:ratio5m", "legendFormat": "{{job}}" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "timeseries", "title": "Service latency P95 / P99", "id": 3,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        { "expr": "bleatbank:http_request_duration:p95", "legendFormat": "P95 {{job}}" },
+        { "expr": "bleatbank:http_request_duration:p99", "legendFormat": "P99 {{job}}" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+    },
+    {
+      "type": "timeseries", "title": "Pod CPU utilisation", "id": 4,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "cores" } },
+      "targets": [{ "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"banking\",container!=\"\"}[5m]))", "legendFormat": "{{pod}}" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+    },
+    {
+      "type": "timeseries", "title": "Pod memory utilisation", "id": 5,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "targets": [{ "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"banking\",container!=\"\"})", "legendFormat": "{{pod}}" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 }
+    },
+    {
+      "type": "timeseries", "title": "Transaction HPA current vs desired replicas", "id": 6,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"banking\",horizontalpodautoscaler=\"transaction-service\"}", "legendFormat": "Current" },
+        { "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"banking\",horizontalpodautoscaler=\"transaction-service\"}", "legendFormat": "Desired" },
+        { "expr": "kube_horizontalpodautoscaler_spec_max_replicas{namespace=\"banking\",horizontalpodautoscaler=\"transaction-service\"}", "legendFormat": "Maximum" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }
+    },
+    {
+      "type": "timeseries", "title": "Kafka consumer lag", "id": 7,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [{ "expr": "kafka_consumergroup_lag{consumergroup=\"activity-service-group\",topic=\"banking-transactions\"}", "legendFormat": "partition {{partition}}" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 }
+    },
+    {
+      "type": "timeseries", "title": "PostgreSQL active connections", "id": 8,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [{ "expr": "sum(pg_stat_activity_count{datname=\"bankingdb\",state=\"active\"})", "legendFormat": "Active" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 }
+    },
+    {
+      "type": "stat", "title": "Redis application cache hit rate", "id": 9,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percentunit" } },
+      "targets": [{ "expr": "bleatbank:redis_cache_hit:ratio5m", "legendFormat": "Hit rate" }],
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 32 }
+    },
+    {
+      "type": "timeseries", "title": "PostgreSQL query duration", "id": 10,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [{ "expr": "rate(pg_stat_database_blk_read_time{datname=\"bankingdb\"}[5m]) + rate(pg_stat_database_blk_write_time{datname=\"bankingdb\"}[5m])", "legendFormat": "DB I/O time" }],
+      "gridPos": { "h": 6, "w": 16, "x": 8, "y": 32 }
+    },
+    {
+      "type": "logs", "title": "Application errors", "id": 11,
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "targets": [{ "expr": "{namespace=\"banking\"} | json | level=~\"ERROR|error\"", "refId": "A" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 38 }
+    },
+    {
+      "type": "logs", "title": "Slow requests and Kafka consumer errors", "id": 12,
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "targets": [{ "expr": "{namespace=\"banking\"} |~ \"(?i)(slow|latency|kafka.*error|consumer.*error)\"", "refId": "A" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 38 }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": ["bleatbank", "operations", "kubernetes"],
+  "templating": {
+    "list": [
+      { "name": "DS_PROMETHEUS", "type": "datasource", "query": "prometheus", "label": "Prometheus" },
+      { "name": "DS_LOKI", "type": "datasource", "query": "loki", "label": "Loki" }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Techbleat Bank - Operations Overview",
+  "uid": "bleatbank-operations",
+  "version": 1
+}

@@ -1,0 +1,31 @@
+grafana:
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+      label: grafana_dashboard
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
+    ruleNamespaceSelector: {}
+
+alertmanager:
+  alertmanagerSpec:
+    alertmanagerConfigSelector:
+      matchLabels:
+        alertmanagerConfig: bleatbank
+    alertmanagerConfigNamespaceSelector: {}
+

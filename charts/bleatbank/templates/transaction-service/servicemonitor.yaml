@@ -9,6 +9,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: bleatbank
+    release: {{ .Values.monitoring.releaseLabel }}
 spec:
   selector:
     matchLabels:

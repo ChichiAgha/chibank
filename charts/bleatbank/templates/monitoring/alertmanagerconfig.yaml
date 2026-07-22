@@ -1,0 +1,34 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.alerting.enabled }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: bleatbank
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    alertmanagerConfig: bleatbank
+spec:
+  route:
+    receiver: slack
+    groupBy: [alertname, severity]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    routes:
+      - receiver: slack
+        matchers:
+          - name: team
+            value: banking
+  receivers:
+    - name: slack
+      slackConfigs:
+        - apiURL:
+            name: {{ .Values.monitoring.alerting.slack.secretName }}
+            key: {{ .Values.monitoring.alerting.slack.secretKey }}
+          channel: {{ .Values.monitoring.alerting.slack.channel | quote }}
+          sendResolved: true
+          title: '[{{ "{{" }} .Status | toUpper {{ "}}" }}] {{ "{{" }} .CommonLabels.alertname {{ "}}" }}'
+          text: >-
+            {{ "{{" }} range .Alerts {{ "}}" }}{{ "{{" }} .Annotations.summary {{ "}}" }}
+            {{ "{{" }} .Annotations.description {{ "}}" }}
+            {{ "{{" }} end {{ "}}" }}
+{{- end }}

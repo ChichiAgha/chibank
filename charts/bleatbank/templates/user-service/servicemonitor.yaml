@@ -1,0 +1,23 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: user-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: bleatbank
+    release: {{ .Values.monitoring.releaseLabel }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: user-service
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+{{- end }}

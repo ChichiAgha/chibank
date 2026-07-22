@@ -2,11 +2,15 @@ import json
 import os
 import threading
 import time
+import logging
+from datetime import datetime, timezone
 
 from confluent_kafka import Consumer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
+from prometheus_client import Counter, Gauge
+from prometheus_fastapi_instrumentator import Instrumentator
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
@@ -19,6 +23,41 @@ engine = create_engine(f"postgresql+psycopg2://{DATABASE_URL.split('://', 1)[1]}
 
 app = FastAPI(title="Techbleat Global Bank - Activity Service")
 
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        return json.dumps(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "level": record.levelname,
+                "service": "activity-service",
+                "message": record.getMessage(),
+            }
+        )
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JsonFormatter())
+logger = logging.getLogger("activity-service")
+logger.handlers = [handler]
+logger.setLevel(logging.INFO)
+logger.propagate = False
+
+activities_consumed = Counter(
+    "bank_activity_events_consumed_total",
+    "Kafka transaction events successfully persisted by the activity service",
+    ["event_type"],
+)
+kafka_consumer_errors = Counter(
+    "bank_activity_consumer_errors_total",
+    "Kafka consumer or activity persistence errors",
+)
+active_users_5m = Gauge(
+    "bank_active_users_5m",
+    "Distinct users with transaction activity during the last five minutes",
+)
+recent_user_activity = {}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_ORIGIN, "http://127.0.0.1:3000"],
@@ -26,6 +65,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
 
 def kafka_consumer_loop():
@@ -40,7 +81,9 @@ def kafka_consumer_loop():
                 }
             )
             consumer.subscribe(["banking-transactions"])
-        except Exception:
+        except Exception as exc:
+            kafka_consumer_errors.inc()
+            logger.warning("kafka_connect_failed error=%s", exc)
             time.sleep(3)
 
     while True:
@@ -49,6 +92,8 @@ def kafka_consumer_loop():
             if msg is None:
                 continue
             if msg.error():
+                kafka_consumer_errors.inc()
+                logger.warning("kafka_message_error error=%s", msg.error())
                 continue
 
             event = json.loads(msg.value().decode("utf-8"))
@@ -71,7 +116,19 @@ def kafka_consumer_loop():
                         "description": description,
                     },
                 )
-        except Exception:
+            activities_consumed.labels(event_type=activity_type).inc()
+            now = time.time()
+            recent_user_activity[user_id] = now
+            cutoff = now - 300
+            for inactive_user in [
+                key for key, last_seen in recent_user_activity.items() if last_seen < cutoff
+            ]:
+                recent_user_activity.pop(inactive_user, None)
+            active_users_5m.set(len(recent_user_activity))
+            logger.info("activity_persisted user_id=%s event_type=%s", user_id, activity_type)
+        except Exception as exc:
+            kafka_consumer_errors.inc()
+            logger.exception("activity_consumer_failed error=%s", exc)
             time.sleep(1)
 
 

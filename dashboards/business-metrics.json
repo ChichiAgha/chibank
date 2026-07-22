@@ -1,0 +1,52 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "timeseries", "title": "Transaction volume by type", "id": 1,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "targets": [{ "expr": "sum by (type) (rate(bank_transactions_total[5m]))", "legendFormat": "{{type}}" }],
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "timeseries", "title": "Total value transacted per hour", "id": 2,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "currencyGBP" } },
+      "targets": [{ "expr": "sum by (type) (increase(bank_transaction_value_total[1h]))", "legendFormat": "{{type}}" }],
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "timeseries", "title": "Registered users over time", "id": 3,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [{ "expr": "sum(bank_users_registered_total)", "legendFormat": "Registered users" }],
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 }
+    },
+    {
+      "type": "stat", "title": "Active users in last five minutes", "id": 4,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [{ "expr": "max(bank_active_users_5m)", "legendFormat": "Active users" }],
+      "gridPos": { "h": 9, "w": 6, "x": 12, "y": 9 }
+    },
+    {
+      "type": "stat", "title": "Activity events processed", "id": 5,
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [{ "expr": "sum(increase(bank_activity_events_consumed_total[1h]))", "legendFormat": "Last hour" }],
+      "gridPos": { "h": 9, "w": 6, "x": 18, "y": 9 }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": ["bleatbank", "business"],
+  "templating": {
+    "list": [{ "name": "DS_PROMETHEUS", "type": "datasource", "query": "prometheus", "label": "Prometheus" }]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "title": "Techbleat Bank - Business Metrics",
+  "uid": "bleatbank-business",
+  "version": 1
+}

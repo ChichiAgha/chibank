@@ -1,0 +1,98 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheusRules.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bleatbank-alerts
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/part-of: bleatbank
+    release: {{ .Values.monitoring.releaseLabel }}
+spec:
+  groups:
+    - name: bleatbank.recording
+      interval: 30s
+      rules:
+        - record: bleatbank:http_requests:rate5m
+          expr: sum by (job) (rate(http_requests_total[5m])) or sum by (job) (rate(http_server_requests_seconds_count[5m]))
+        - record: bleatbank:http_5xx:ratio5m
+          expr: (sum by (job) (rate(http_requests_total{status=~"5.."}[5m])) / clamp_min(sum by (job) (rate(http_requests_total[5m])), 0.001)) or (sum by (job) (rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum by (job) (rate(http_server_requests_seconds_count[5m])), 0.001))
+        - record: bleatbank:http_request_duration:p95
+          expr: histogram_quantile(0.95, sum by (job, le) (rate(http_request_duration_highr_seconds_bucket[5m]))) or histogram_quantile(0.95, sum by (job, le) (rate(http_server_requests_seconds_bucket[5m])))
+        - record: bleatbank:http_request_duration:p99
+          expr: histogram_quantile(0.99, sum by (job, le) (rate(http_request_duration_highr_seconds_bucket[5m]))) or histogram_quantile(0.99, sum by (job, le) (rate(http_server_requests_seconds_bucket[5m])))
+        - record: bleatbank:redis_cache_hit:ratio5m
+          expr: sum(rate(bank_redis_cache_requests_total{result="hit"}[5m])) / clamp_min(sum(rate(bank_redis_cache_requests_total{result=~"hit|miss"}[5m])), 0.001)
+    - name: bleatbank.alerts
+      rules:
+        - alert: HighErrorRate
+          expr: bleatbank:http_5xx:ratio5m > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            team: banking
+          annotations:
+            summary: "High HTTP 5xx rate on an application service"
+            description: "An application service has returned more than 5% HTTP 5xx responses for five minutes. Inspect the alert labels for the affected target."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/HighErrorRate.md"
+        - alert: SlowTransactions
+          expr: histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=~".*transaction-service.*"}[5m]))) > 2
+          for: 5m
+          labels:
+            severity: warning
+            team: banking
+          annotations:
+            summary: "Transaction Service P95 latency exceeds two seconds"
+            description: "P95 transaction request latency has remained above two seconds for five minutes."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/SlowTransactions.md"
+        - alert: KafkaConsumerLag
+          expr: max(kafka_consumergroup_lag{consumergroup="activity-service-group",topic="banking-transactions"}) > 100
+          for: 3m
+          labels:
+            severity: warning
+            team: banking
+          annotations:
+            summary: "Activity Service Kafka consumer lag is high"
+            description: "Consumer lag on banking-transactions has exceeded 100 messages."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/KafkaConsumerLag.md"
+        - alert: PodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="banking"}[10m]) > 3
+          for: 2m
+          labels:
+            severity: critical
+            team: banking
+          annotations:
+            summary: "Container is repeatedly restarting"
+            description: "A banking container restarted more than three times in ten minutes. Inspect the alert labels for the pod and container."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/PodCrashLooping.md"
+        - alert: LowDiskOnPostgres
+          expr: 100 * kubelet_volume_stats_used_bytes{namespace="banking",persistentvolumeclaim=~"postgres-data.*"} / kubelet_volume_stats_capacity_bytes{namespace="banking",persistentvolumeclaim=~"postgres-data.*"} > 80
+          for: 5m
+          labels:
+            severity: warning
+            team: banking
+          annotations:
+            summary: "PostgreSQL persistent volume usage exceeds 80%"
+            description: "A banking persistent volume claim is more than 80% full. Inspect the alert labels for the claim."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/LowDiskOnPostgres.md"
+        - alert: ServiceDown
+          expr: up{namespace="banking"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: banking
+          annotations:
+            summary: "Prometheus target is unavailable"
+            description: "A monitored banking target has been unavailable for two minutes. Inspect the alert labels for the target."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/ServiceDown.md"
+        - alert: HPAMaxReplicasReached
+          expr: kube_horizontalpodautoscaler_status_current_replicas{namespace="banking",horizontalpodautoscaler="transaction-service"} >= kube_horizontalpodautoscaler_spec_max_replicas{namespace="banking",horizontalpodautoscaler="transaction-service"}
+          for: 5m
+          labels:
+            severity: warning
+            team: banking
+          annotations:
+            summary: "Transaction Service HPA is at maximum replicas"
+            description: "The HPA has been at its configured maximum for five minutes; investigate load and capacity."
+            runbook_url: "https://github.com/ChichiAgha/chibank/blob/main/runbooks/HPAMaxReplicasReached.md"
+
+{{- end }}

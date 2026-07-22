@@ -1,0 +1,21 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+frontend:
+  replicas: 3
+userService:
+  replicas: 3
+activityService:
+  replicas: 2
+transactionService:
+  replicas: 3
+  hpa:
+    minReplicas: 3
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+
+postgres:
+  # Supply at deploy time from a secret manager, for example:
+  # --set-string postgres.password="$BANKING_DB_PASSWORD"
+  password: ""
+  storage: 20Gi

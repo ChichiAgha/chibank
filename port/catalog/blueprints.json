@@ -72,7 +72,11 @@
         "runbook": { "type": "string", "format": "url", "title": "Runbook" },
         "hasTests": { "type": "boolean", "title": "Has tests" },
         "hasMonitoring": { "type": "boolean", "title": "Has monitoring" },
-        "hasAlerts": { "type": "boolean", "title": "Has alerts" }
+        "hasAlerts": { "type": "boolean", "title": "Has alerts" },
+        "image": { "type": "string", "title": "Container image" },
+        "version": { "type": "string", "title": "Deployed version" },
+        "metricsPath": { "type": "string", "title": "Prometheus metrics path" },
+        "dashboard": { "type": "string", "format": "url", "title": "Operations dashboard" }
       },
       "required": ["description", "serviceType", "lifecycle", "criticality", "repository"]
     },

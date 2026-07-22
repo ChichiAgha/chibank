@@ -42,6 +42,8 @@ Retail Banking domain
 
 The setup script is idempotent. Updating either catalog JSON file on `main` automatically reapplies the model and entities. It does not delete unrelated Port data.
 
+Service entities expose their immutable container image, deployed version, Prometheus metrics path, and operations dashboard. Successful development rollouts are represented by `bankDeployment` entities related to both the service and the Minikube development environment. The catalog currently records the four verified `v1.1.0` deployments from 22 July 2026.
+
 ## Self-service actions
 
 Self-service definitions are managed in:

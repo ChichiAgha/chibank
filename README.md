@@ -1,4 +1,36 @@
-# Techbleat Global Bank - Backend
+# Techbleat Global Bank — Kubernetes Capstone
+
+This repository contains a production-style deployment of the complete banking application with Helm, Kubernetes health and capacity controls, Prometheus metrics and alerts, Grafana dashboards, Loki logging, and operational runbooks.
+
+## Capstone quick start
+
+```bash
+minikube start --cpus=4 --memory=8192
+minikube addons enable ingress
+minikube addons enable metrics-server
+./scripts/install-observability.sh
+helm upgrade --install bleatbank charts/bleatbank \
+  --namespace banking --create-namespace \
+  --values charts/bleatbank/values-dev.yaml \
+  --wait --timeout 15m
+```
+
+The default chart references the instrumented `chigoldd/chibank-*` images tagged `v1.1.0`. Publish a new immutable version using [the image guide](docs/image-build-and-push.md) whenever application instrumentation changes. The full procedure, access commands, alert testing, and Slack setup are in [the deployment guide](docs/deployment.md).
+
+Capstone assets:
+
+- Helm deployment: `charts/bleatbank/`
+- Operations and business dashboards: `dashboards/`
+- Seven Prometheus alerts: `alerts/` and the Helm chart
+- Alert runbooks: `runbooks/`
+- Prometheus, Grafana, Loki and Alloy configuration: `monitoring/`
+- Architecture: `docs/architecture.md`
+
+Live screenshots and the demo-video link cannot be generated honestly from source code alone. Capture those from the running environment and place them under `screenshots/` before submission.
+
+---
+
+# Application development reference
 
 A microservices-based banking platform built with Python (FastAPI), Java (Spring Boot), PostgreSQL, Redis, and Apache Kafka. The system handles user management, financial transactions, and activity logging through independent, event-driven services.
 

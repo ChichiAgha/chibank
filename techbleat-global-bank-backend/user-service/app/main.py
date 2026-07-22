@@ -1,9 +1,14 @@
 import os
+import logging
+import json
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import create_engine, text
+from prometheus_client import Counter
+from prometheus_fastapi_instrumentator import Instrumentator
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
@@ -15,6 +20,31 @@ engine = create_engine(f"postgresql+psycopg2://{DATABASE_URL.split('://', 1)[1]}
 
 app = FastAPI(title="Techbleat Global Bank - User Service")
 
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        return json.dumps(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "level": record.levelname,
+                "service": "user-service",
+                "message": record.getMessage(),
+            }
+        )
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JsonFormatter())
+logger = logging.getLogger("user-service")
+logger.handlers = [handler]
+logger.setLevel(logging.INFO)
+logger.propagate = False
+
+users_registered = Counter(
+    "bank_users_registered_total",
+    "Total number of successfully registered bank users",
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_ORIGIN, "http://127.0.0.1:3000"],
@@ -22,6 +52,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
 
 class UserCreate(BaseModel):
@@ -66,6 +98,8 @@ def create_user(user: UserCreate):
             {"user_id": user.id},
         )
 
+    users_registered.inc()
+    logger.info("user_registered user_id=%s", user.id)
     return {"message": "User created successfully", "user_id": user.id}
 
 

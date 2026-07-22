@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
+import io.micrometer.core.instrument.Metrics;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ public class TransactionService {
         saveTransaction(userId, "DEPOSIT", amount, "cash deposit");
         publishEvent(userId, "DEPOSIT", amount);
         cacheBalance(userId, account.getBalance());
+        recordTransaction("deposit", amount);
 
         return Map.of("message", "Deposit successful", "balance", account.getBalance());
     }
@@ -57,6 +59,7 @@ public class TransactionService {
         saveTransaction(userId, "WITHDRAW", amount, "cash withdrawal");
         publishEvent(userId, "WITHDRAW", amount);
         cacheBalance(userId, account.getBalance());
+        recordTransaction("withdraw", amount);
 
         return Map.of("message", "Withdrawal successful", "balance", account.getBalance());
     }
@@ -85,6 +88,7 @@ public class TransactionService {
 
         cacheBalance(fromUserId, fromAccount.getBalance());
         cacheBalance(toUserId, toAccount.getBalance());
+        recordTransaction("transfer", amount);
 
         return Map.of(
                 "message", "Transfer successful",
@@ -97,9 +101,12 @@ public class TransactionService {
         try (Jedis jedis = new Jedis(redisHost, redisPort)) {
             String value = jedis.get("balance:" + userId);
             if (value != null) {
+                Metrics.counter("bank_redis_cache_requests_total", "result", "hit").increment();
                 return Double.parseDouble(value);
             }
+            Metrics.counter("bank_redis_cache_requests_total", "result", "miss").increment();
         } catch (Exception ignored) {
+            Metrics.counter("bank_redis_cache_requests_total", "result", "error").increment();
         }
 
         Account account = getAccount(userId);
@@ -146,5 +153,10 @@ public class TransactionService {
             jedis.set("balance:" + userId, String.valueOf(balance));
         } catch (Exception ignored) {
         }
+    }
+
+    private void recordTransaction(String type, Double amount) {
+        Metrics.counter("bank_transactions_total", "type", type).increment();
+        Metrics.counter("bank_transaction_value_total", "type", type).increment(amount);
     }
 }

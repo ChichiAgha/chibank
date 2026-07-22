@@ -1,0 +1,10 @@
+Techbleat Global Bank is installed in namespace {{ .Values.global.namespace }}.
+
+Add this local-demo hostname to /etc/hosts:
+  127.0.0.1 {{ .Values.ingress.host }}
+
+Check workloads:
+  kubectl get pods -n {{ .Values.global.namespace }}
+
+Application URL:
+  http://{{ .Values.ingress.host }}
