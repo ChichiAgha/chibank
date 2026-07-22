@@ -1,0 +1,66 @@
+name: Run Bank Service Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Bank service to test
+        required: true
+        type: choice
+        options:
+          - frontend
+          - user-service
+          - transaction-service
+          - activity-service
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    if: inputs.service == 'frontend'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: techbleat-global-bank-frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: techbleat-global-bank-frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  python-service:
+    if: inputs.service == 'user-service' || inputs.service == 'activity-service'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: techbleat-global-bank-backend/${{ inputs.service }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: techbleat-global-bank-backend/${{ inputs.service }}/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: PYTHONPATH=. pytest -q
+
+  transaction-service:
+    if: inputs.service == 'transaction-service'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: techbleat-global-bank-backend/transaction-service
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - run: mvn test

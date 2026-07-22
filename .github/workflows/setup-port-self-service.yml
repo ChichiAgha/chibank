@@ -1,0 +1,34 @@
+name: Setup Port Self-Service
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "port/self-service/**"
+      - "scripts/setup-port-self-service.sh"
+      - ".github/workflows/setup-port-self-service.yml"
+      - ".github/workflows/run-bank-service-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  setup-self-service:
+    name: Create Port bank self-service actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Validate self-service definitions
+        run: jq -e 'type == "array" and length == 3' port/self-service/actions.json
+
+      - name: Apply Port self-service actions
+        env:
+          PORT_CLIENT_ID: ${{ secrets.PORT_CLIENT_ID }}
+          PORT_CLIENT_SECRET: ${{ secrets.PORT_CLIENT_SECRET }}
+          PORT_API_URL: https://api.port.io
+        run: bash scripts/setup-port-self-service.sh

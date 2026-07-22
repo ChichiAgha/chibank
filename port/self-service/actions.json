@@ -1,0 +1,89 @@
+[
+  {
+    "identifier": "run_bank_service_tests",
+    "title": "Run bank service tests",
+    "icon": "GithubActions",
+    "description": "Run the unit tests and build checks for this bank service",
+    "trigger": {
+      "type": "self-service",
+      "operation": "DAY-2",
+      "userInputs": {
+        "properties": {},
+        "required": [],
+        "order": []
+      },
+      "blueprintIdentifier": "bankService"
+    },
+    "invocationMethod": {
+      "type": "INTEGRATION_ACTION",
+      "installationId": "__INSTALLATION_ID__",
+      "integrationActionType": "dispatch_workflow",
+      "integrationActionExecutionProperties": {
+        "org": "ChichiAgha",
+        "repo": "chibank",
+        "workflow": "run-bank-service-tests.yml",
+        "workflowInputs": {
+          "service": "{{ .entity.identifier }}"
+        },
+        "reportWorkflowStatus": true
+      }
+    },
+    "requiredApproval": false
+  },
+  {
+    "identifier": "run_bank_security_scan",
+    "title": "Run bank image security scan",
+    "icon": "Trivy",
+    "description": "Scan every bank container image for high and critical vulnerabilities",
+    "trigger": {
+      "type": "self-service",
+      "operation": "CREATE",
+      "userInputs": {
+        "properties": {},
+        "required": [],
+        "order": []
+      }
+    },
+    "invocationMethod": {
+      "type": "INTEGRATION_ACTION",
+      "installationId": "__INSTALLATION_ID__",
+      "integrationActionType": "dispatch_workflow",
+      "integrationActionExecutionProperties": {
+        "org": "ChichiAgha",
+        "repo": "chibank",
+        "workflow": "image-scan.yaml",
+        "workflowInputs": {},
+        "reportWorkflowStatus": true
+      }
+    },
+    "requiredApproval": false
+  },
+  {
+    "identifier": "resync_bank_catalog",
+    "title": "Resync bank catalog",
+    "icon": "Ocean",
+    "description": "Reapply the repository-managed bank catalog model, entities, and relationships",
+    "trigger": {
+      "type": "self-service",
+      "operation": "CREATE",
+      "userInputs": {
+        "properties": {},
+        "required": [],
+        "order": []
+      }
+    },
+    "invocationMethod": {
+      "type": "INTEGRATION_ACTION",
+      "installationId": "__INSTALLATION_ID__",
+      "integrationActionType": "dispatch_workflow",
+      "integrationActionExecutionProperties": {
+        "org": "ChichiAgha",
+        "repo": "chibank",
+        "workflow": "setup-port-catalog.yml",
+        "workflowInputs": {},
+        "reportWorkflowStatus": true
+      }
+    },
+    "requiredApproval": true
+  }
+]
