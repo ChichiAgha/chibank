@@ -59,7 +59,7 @@ upsert_entity() {
     --header "$auth_header" \
     --header 'Content-Type: application/json' \
     --data "$payload" \
-    "$PORT_API_URL/v1/blueprints/$blueprint/entities?upsert=true" >/dev/null
+    "$PORT_API_URL/v1/blueprints/$blueprint/entities?upsert=true&create_missing_related_entities=true" >/dev/null
   echo "Upserted entity: $blueprint/$identifier"
 }
 
