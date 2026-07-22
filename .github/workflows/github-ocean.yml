@@ -20,4 +20,6 @@ jobs:
           port_base_url: https://api.port.io
           config: |
             github_host: https://api.github.com
+            github_token: ${{ secrets.PORT_GITHUB_TOKEN }}
+            github_organization: ChichiAgha
             resync_ratelimit_reservation_threshold: 95
