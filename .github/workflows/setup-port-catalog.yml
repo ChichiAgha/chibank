@@ -1,0 +1,35 @@
+name: Setup Port Bank Catalog
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "port/catalog/**"
+      - "scripts/setup-port-catalog.sh"
+      - ".github/workflows/setup-port-catalog.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  setup-catalog:
+    name: Create Port catalog model and entities
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Validate catalog definitions
+        run: |
+          jq -e 'type == "array" and length == 6' port/catalog/blueprints.json
+          jq -e 'type == "array" and length == 11' port/catalog/entities.json
+
+      - name: Apply Port catalog
+        env:
+          PORT_CLIENT_ID: ${{ secrets.PORT_CLIENT_ID }}
+          PORT_CLIENT_SECRET: ${{ secrets.PORT_CLIENT_SECRET }}
+          PORT_API_URL: https://api.port.io
+        run: bash scripts/setup-port-catalog.sh

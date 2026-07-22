@@ -1,0 +1,142 @@
+[
+  {
+    "blueprint": "bankDomain",
+    "identifier": "retail-banking",
+    "title": "Retail Banking",
+    "properties": {
+      "description": "Customer accounts, balances, transfers, and transaction activity",
+      "businessOwner": "Techbleat Global Bank"
+    },
+    "relations": {}
+  },
+  {
+    "blueprint": "bankApplication",
+    "identifier": "techbleat-bank",
+    "title": "Techbleat Global Bank",
+    "properties": {
+      "description": "Event-driven microservices banking application",
+      "lifecycle": "production",
+      "criticality": "critical",
+      "documentation": "https://github.com/ChichiAgha/chibank/blob/main/README.md"
+    },
+    "relations": { "domain": "retail-banking" }
+  },
+  {
+    "blueprint": "bankResource",
+    "identifier": "banking-postgres",
+    "title": "Banking PostgreSQL",
+    "properties": { "resourceType": "database", "technology": "PostgreSQL", "version": "15", "criticality": "critical", "managed": false },
+    "relations": { "application": "techbleat-bank" }
+  },
+  {
+    "blueprint": "bankResource",
+    "identifier": "banking-redis",
+    "title": "Banking Redis",
+    "properties": { "resourceType": "cache", "technology": "Redis", "version": "7", "criticality": "high", "managed": false },
+    "relations": { "application": "techbleat-bank" }
+  },
+  {
+    "blueprint": "bankResource",
+    "identifier": "banking-kafka",
+    "title": "Banking Kafka",
+    "properties": { "resourceType": "messageBroker", "technology": "Apache Kafka", "version": "8.1.1", "criticality": "high", "managed": false },
+    "relations": { "application": "techbleat-bank" }
+  },
+  {
+    "blueprint": "bankService",
+    "identifier": "frontend",
+    "title": "Banking Frontend",
+    "properties": {
+      "description": "Customer-facing React banking interface",
+      "language": "JavaScript",
+      "framework": "React/Vite",
+      "serviceType": "frontend",
+      "lifecycle": "production",
+      "criticality": "high",
+      "port": 8080,
+      "repository": "https://github.com/ChichiAgha/chibank",
+      "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-frontend",
+      "hasTests": true,
+      "hasMonitoring": false,
+      "hasAlerts": false
+    },
+    "relations": { "application": "techbleat-bank", "dependsOn": ["user-service", "transaction-service", "activity-service"], "usesResources": [] }
+  },
+  {
+    "blueprint": "bankService",
+    "identifier": "user-service",
+    "title": "User Service",
+    "properties": {
+      "description": "User registration and bank-account creation API",
+      "language": "Python",
+      "framework": "FastAPI",
+      "serviceType": "api",
+      "lifecycle": "production",
+      "criticality": "critical",
+      "port": 8000,
+      "repository": "https://github.com/ChichiAgha/chibank",
+      "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-backend/user-service",
+      "runbook": "https://github.com/ChichiAgha/chibank/blob/main/runbooks/ServiceDown.md",
+      "hasTests": true,
+      "hasMonitoring": true,
+      "hasAlerts": true
+    },
+    "relations": { "application": "techbleat-bank", "dependsOn": [], "usesResources": ["banking-postgres"] }
+  },
+  {
+    "blueprint": "bankService",
+    "identifier": "transaction-service",
+    "title": "Transaction Service",
+    "properties": {
+      "description": "Deposits, withdrawals, transfers, balances, and transaction history",
+      "language": "Java",
+      "framework": "Spring Boot",
+      "serviceType": "api",
+      "lifecycle": "production",
+      "criticality": "critical",
+      "port": 8080,
+      "repository": "https://github.com/ChichiAgha/chibank",
+      "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-backend/transaction-service",
+      "runbook": "https://github.com/ChichiAgha/chibank/blob/main/runbooks/HighErrorRate.md",
+      "hasTests": true,
+      "hasMonitoring": true,
+      "hasAlerts": true
+    },
+    "relations": { "application": "techbleat-bank", "dependsOn": ["user-service"], "usesResources": ["banking-postgres", "banking-redis", "banking-kafka"] }
+  },
+  {
+    "blueprint": "bankService",
+    "identifier": "activity-service",
+    "title": "Activity Service",
+    "properties": {
+      "description": "Kafka consumer and customer activity-log API",
+      "language": "Python",
+      "framework": "FastAPI",
+      "serviceType": "worker",
+      "lifecycle": "production",
+      "criticality": "high",
+      "port": 8001,
+      "repository": "https://github.com/ChichiAgha/chibank",
+      "documentation": "https://github.com/ChichiAgha/chibank/tree/main/techbleat-global-bank-backend/activity-service",
+      "runbook": "https://github.com/ChichiAgha/chibank/blob/main/runbooks/ServiceDown.md",
+      "hasTests": true,
+      "hasMonitoring": true,
+      "hasAlerts": true
+    },
+    "relations": { "application": "techbleat-bank", "dependsOn": ["transaction-service"], "usesResources": ["banking-postgres", "banking-kafka"] }
+  },
+  {
+    "blueprint": "bankEnvironment",
+    "identifier": "development",
+    "title": "Development",
+    "properties": { "type": "development", "namespace": "banking", "cluster": "minikube", "protected": false },
+    "relations": { "application": "techbleat-bank" }
+  },
+  {
+    "blueprint": "bankEnvironment",
+    "identifier": "production",
+    "title": "Production",
+    "properties": { "type": "production", "namespace": "banking", "cluster": "production", "url": "https://techbleat-bank.duckdns.org", "protected": true },
+    "relations": { "application": "techbleat-bank" }
+  }
+]

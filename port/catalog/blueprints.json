@@ -1,0 +1,128 @@
+[
+  {
+    "identifier": "bankDomain",
+    "title": "Banking Domain",
+    "description": "Business domains owned by the banking platform",
+    "icon": "Finance",
+    "schema": {
+      "properties": {
+        "description": { "type": "string", "title": "Description" },
+        "businessOwner": { "type": "string", "title": "Business owner" }
+      },
+      "required": ["description"]
+    },
+    "calculationProperties": {},
+    "relations": {}
+  },
+  {
+    "identifier": "bankApplication",
+    "title": "Bank Application",
+    "description": "Applications that provide banking capabilities",
+    "icon": "Service",
+    "schema": {
+      "properties": {
+        "description": { "type": "string", "title": "Description" },
+        "lifecycle": { "type": "string", "title": "Lifecycle", "enum": ["development", "production", "retired"] },
+        "criticality": { "type": "string", "title": "Criticality", "enum": ["low", "medium", "high", "critical"] },
+        "documentation": { "type": "string", "format": "url", "title": "Documentation" }
+      },
+      "required": ["description", "lifecycle", "criticality"]
+    },
+    "calculationProperties": {},
+    "relations": {
+      "domain": { "title": "Domain", "target": "bankDomain", "required": true, "many": false }
+    }
+  },
+  {
+    "identifier": "bankResource",
+    "title": "Bank Resource",
+    "description": "Data stores, caches, and messaging resources used by bank services",
+    "icon": "Database",
+    "schema": {
+      "properties": {
+        "resourceType": { "type": "string", "title": "Resource type", "enum": ["database", "cache", "messageBroker"] },
+        "technology": { "type": "string", "title": "Technology" },
+        "version": { "type": "string", "title": "Version" },
+        "criticality": { "type": "string", "title": "Criticality", "enum": ["low", "medium", "high", "critical"] },
+        "managed": { "type": "boolean", "title": "Managed service" }
+      },
+      "required": ["resourceType", "technology", "criticality"]
+    },
+    "calculationProperties": {},
+    "relations": {
+      "application": { "title": "Application", "target": "bankApplication", "required": true, "many": false }
+    }
+  },
+  {
+    "identifier": "bankService",
+    "title": "Bank Service",
+    "description": "Deployable services in the banking application",
+    "icon": "Microservice",
+    "schema": {
+      "properties": {
+        "description": { "type": "string", "title": "Description" },
+        "language": { "type": "string", "title": "Language" },
+        "framework": { "type": "string", "title": "Framework" },
+        "serviceType": { "type": "string", "title": "Service type", "enum": ["frontend", "api", "worker"] },
+        "lifecycle": { "type": "string", "title": "Lifecycle", "enum": ["development", "production", "retired"] },
+        "criticality": { "type": "string", "title": "Criticality", "enum": ["low", "medium", "high", "critical"] },
+        "port": { "type": "number", "title": "Port" },
+        "repository": { "type": "string", "format": "url", "title": "Repository" },
+        "documentation": { "type": "string", "format": "url", "title": "Documentation" },
+        "runbook": { "type": "string", "format": "url", "title": "Runbook" },
+        "hasTests": { "type": "boolean", "title": "Has tests" },
+        "hasMonitoring": { "type": "boolean", "title": "Has monitoring" },
+        "hasAlerts": { "type": "boolean", "title": "Has alerts" }
+      },
+      "required": ["description", "serviceType", "lifecycle", "criticality", "repository"]
+    },
+    "calculationProperties": {},
+    "relations": {
+      "application": { "title": "Application", "target": "bankApplication", "required": true, "many": false },
+      "dependsOn": { "title": "Depends on", "target": "bankService", "required": false, "many": true },
+      "usesResources": { "title": "Uses resources", "target": "bankResource", "required": false, "many": true }
+    }
+  },
+  {
+    "identifier": "bankEnvironment",
+    "title": "Bank Environment",
+    "description": "Runtime environments for the banking application",
+    "icon": "Environment",
+    "schema": {
+      "properties": {
+        "type": { "type": "string", "title": "Environment type", "enum": ["development", "staging", "production"] },
+        "namespace": { "type": "string", "title": "Kubernetes namespace" },
+        "cluster": { "type": "string", "title": "Cluster" },
+        "url": { "type": "string", "format": "url", "title": "Application URL" },
+        "protected": { "type": "boolean", "title": "Protected" }
+      },
+      "required": ["type", "namespace", "protected"]
+    },
+    "calculationProperties": {},
+    "relations": {
+      "application": { "title": "Application", "target": "bankApplication", "required": true, "many": false }
+    }
+  },
+  {
+    "identifier": "bankDeployment",
+    "title": "Bank Deployment",
+    "description": "Service deployment history across bank environments",
+    "icon": "Deployment",
+    "schema": {
+      "properties": {
+        "version": { "type": "string", "title": "Version" },
+        "status": { "type": "string", "title": "Status", "enum": ["pending", "running", "succeeded", "failed", "rolledBack"] },
+        "deployedAt": { "type": "string", "format": "date-time", "title": "Deployed at" },
+        "deployedBy": { "type": "string", "title": "Deployed by" },
+        "workflowRunUrl": { "type": "string", "format": "url", "title": "Workflow run" },
+        "commitSha": { "type": "string", "title": "Commit SHA" }
+      },
+      "required": ["version", "status"]
+    },
+    "calculationProperties": {},
+    "relations": {
+      "service": { "title": "Service", "target": "bankService", "required": true, "many": false },
+      "environment": { "title": "Environment", "target": "bankEnvironment", "required": true, "many": false }
+    }
+  }
+]
