@@ -17,7 +17,7 @@ helm upgrade --install bleatbank charts/bleatbank \
 
 The default chart references the instrumented `chigoldd/chibank-*` images tagged `v1.1.0`. Publish a new immutable version using [the image guide](docs/image-build-and-push.md) whenever application instrumentation changes. The full procedure, access commands, alert testing, and Slack setup are in [the deployment guide](docs/deployment.md).
 
-Capstone assets:
+assets:
 
 - Helm deployment: `charts/bleatbank/`
 - Operations and business dashboards: `dashboards/`
