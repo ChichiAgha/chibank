@@ -1,4 +1,4 @@
-# Techbleat Global Bank — Kubernetes Capstone
+# Techbleat Global Bank — Kubernetes
 
 This repository contains a production-style deployment of the complete banking application with Helm, Kubernetes health and capacity controls, Prometheus metrics and alerts, Grafana dashboards, Loki logging, and operational runbooks.
 
