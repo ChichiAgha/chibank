@@ -2,7 +2,7 @@
 
 This repository contains a production-style deployment of the complete banking application with Helm, Kubernetes health and capacity controls, Prometheus metrics and alerts, Grafana dashboards, Loki logging, and operational runbooks.
 
-## Capstone quick start
+## quick start
 
 ```bash
 minikube start --cpus=4 --memory=8192
